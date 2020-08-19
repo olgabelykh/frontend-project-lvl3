@@ -1,0 +1,17 @@
+{
+  "name": "webpack-template-commom",
+  "version": "1.0.0",
+  "description": "common use webpack project template",
+  "private": true,
+  "scripts": {
+    "build": "webpack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {}
+}
