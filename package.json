@@ -7,7 +7,7 @@
     "build": "webpack"
   },
   "keywords": [],
-  "author": "",
+  "author": "Olya Belykh",
   "license": "ISC",
   "devDependencies": {
     "webpack": "^4.44.1",
