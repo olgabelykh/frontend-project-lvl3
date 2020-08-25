@@ -1,5 +1,5 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common');
@@ -10,9 +10,17 @@ module.exports = merge(common, {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contentHash].bundle.js',
   },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+      },
+    ],
+  },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: './public/index.html',
+    new MiniCssExtractPlugin({
+      filename: '[name].[contentHash].css',
     }),
     new CleanWebpackPlugin(),
   ],

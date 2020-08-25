@@ -2,5 +2,7 @@ install:
 	npm install
 build:
 	npm run build
-start:
+develop:
 	npm start
+lint:
+	npx eslint .
