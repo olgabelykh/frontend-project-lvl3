@@ -1,7 +1,7 @@
 {
-  "name": "webpack-template-commom",
+  "name": "rss-reader",
   "version": "1.0.0",
-  "description": "common use webpack project template",
+  "description": "A training project - RSS reader",
   "private": true,
   "scripts": {
     "build": "webpack --config webpack.prod.js",
