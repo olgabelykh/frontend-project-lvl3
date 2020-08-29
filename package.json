@@ -1,5 +1,5 @@
 {
-  "name": "rss-reader",
+  "name": "@olyabelome/rss-reader",
   "version": "1.0.0",
   "description": "A training project - RSS reader",
   "private": true,
@@ -31,7 +31,11 @@
     "webpack-merge": "^5.1.2"
   },
   "dependencies": {
+    "axios": "^0.20.0",
     "bootstrap": "^4.5.2",
-    "core-js": "^3.6.5"
+    "core-js": "^3.6.5",
+    "on-change": "^2.1.2",
+    "uniqid": "^5.2.0",
+    "yup": "^0.29.3"
   }
 }
