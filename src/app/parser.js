@@ -1,20 +1,21 @@
+import i18next from 'i18next';
+
 const parser = new DOMParser();
 
 export default (string) => {
   const doc = parser.parseFromString(string, 'application/xml');
-  const channelElement = doc.querySelector('channel');
 
-  const title = channelElement.querySelector('title').textContent;
-  const link = channelElement.querySelector('link').textContent;
+  const error = doc.querySelector('parsererror');
+  if (error) {
+    throw new Error(i18next.t('errors.parse'));
+  }
 
-  const items = {};
-  channelElement.querySelectorAll('item').forEach((itemElement) => {
-    const guid = itemElement.querySelector('guid').textContent;
-    items[guid] = {
-      title: itemElement.querySelector('title').textContent,
-      link: itemElement.querySelector('link').textContent,
-    };
-  });
-
-  return { title, link, items };
+  return {
+    title: doc.querySelector('channel > title').textContent,
+    items: Object.values(doc.querySelectorAll('item')).map((item) => ({
+      title: item.querySelector('title').textContent,
+      link: item.querySelector('link').textContent,
+      guid: item.querySelector('guid').textContent,
+    })),
+  };
 };

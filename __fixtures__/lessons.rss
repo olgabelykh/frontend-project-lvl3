@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Новые уроки на Хекслете</title>
+    <description>Практические уроки по программированию</description>
+    <link>https://ru.hexlet.io/</link>
+    <webMaster>info@hexlet.io</webMaster>
+    <item>
+      <title>Установка JavaScript / JS: Настройка окружения</title>
+      <guid isPermaLink="false">1809</guid>
+      <link>https://ru.hexlet.io/courses/js-setup-environment/lessons/setup/theory_unit</link>
+      <description>Цель: Установить интерпретатор и научиться пользоваться REPL</description>
+      <pubDate>Sat, 22 Aug 2020 17:45:56 +0000</pubDate>
+    </item>
+    <item>
+      <title>Линтинг / JS: Настройка окружения</title>
+      <guid isPermaLink="false">1810</guid>
+      <link>https://ru.hexlet.io/courses/js-setup-environment/lessons/linting/theory_unit</link>
+      <description>Цель: Познакомиться с линтерами и установить Eslint</description>
+      <pubDate>Sat, 22 Aug 2020 17:45:52 +0000</pubDate>
+    </item>
+    <item>
+      <title>Глобальная установка пакетов / JS: Настройка окружения</title>
+      <guid isPermaLink="false">1811</guid>
+      <link>https://ru.hexlet.io/courses/js-setup-environment/lessons/global-install/theory_unit</link>
+      <description>Цель: Научиться устанавливать и запускать JavaScript программы</description>
+      <pubDate>Sat, 22 Aug 2020 17:45:46 +0000</pubDate>
+    </item>
+    <item>
+      <title>Зависимости для разработки / JS: Настройка окружения</title>
+      <guid isPermaLink="false">1812</guid>
+      <link>https://ru.hexlet.io/courses/js-setup-environment/lessons/dev-dependencies/theory_unit</link>
+      <description>Цель: Изучить понятие "среды разработки". Узнать про разные типы зависимостей.</description>
+      <pubDate>Sat, 22 Aug 2020 17:45:42 +0000</pubDate>
+    </item>
+    <item>
+      <title>HTTP / Ключевые аспекты веб-разработки на Python</title>
+      <guid isPermaLink="false">1808</guid>
+      <link>https://ru.hexlet.io/courses/python-web-development/lessons/http/theory_unit</link>
+      <description>Цель: Познакомиться с основами сетевых протоколов</description>
+      <pubDate>Fri, 21 Aug 2020 06:25:32 +0000</pubDate>
+    </item>
+    <item>
+      <title>Позиционирование и Grid / CSS: Grid</title>
+      <guid isPermaLink="false">1807</guid>
+      <link>https://ru.hexlet.io/courses/css-grid/lessons/position-in-grid/theory_unit</link>
+      <description>Цель: Изучить влияние свойств позиционирования и z-index при использовании внутри сетки</description>
+      <pubDate>Fri, 31 Jul 2020 18:19:31 +0000</pubDate>
+    </item>
+    <item>
+      <title>Базовая структура HTML документа / Основы современной вёрстки</title>
+      <guid isPermaLink="false">1804</guid>
+      <link>https://ru.hexlet.io/courses/layout-designer-basics/lessons/page-structure/theory_unit</link>
+      <description>Цель: Изучить основные теги и элементы, которые присутствуют в любом HTML документе</description>
+      <pubDate>Thu, 30 Jul 2020 10:21:11 +0000</pubDate>
+    </item>
+    <item>
+      <title>toString() / JS: Введение в ООП</title>
+      <guid isPermaLink="false">1681</guid>
+      <link>https://ru.hexlet.io/courses/js-introduction-to-oop/lessons/to-string/theory_unit</link>
+      <description>Цель: Познакомиться с удобным способом представлять объекты в виде строк</description>
+      <pubDate>Mon, 27 Jul 2020 01:38:45 +0000</pubDate>
+    </item>
+    <item>
+      <title>Модуль 3. Урок 2. Аргументы и результаты работы методов. Рефакторинг. / Введение в Java</title>
+      <guid isPermaLink="false">1801</guid>
+      <link>https://ru.hexlet.io/courses/java_101/lessons/methods_arguments_return/theory_unit</link>
+      <description>Цель: Понять то, как испоьльзовать методы, их аргуметы и результаты работы. Узнать про схему MVC. Научиться редактировать ранее написаный код (рефакторинг).</description>
+      <pubDate>Tue, 21 Jul 2020 21:22:33 +0000</pubDate>
+    </item>
+    <item>
+      <title>Spread-оператор / PHP: Массивы</title>
+      <guid isPermaLink="false">1800</guid>
+      <link>https://ru.hexlet.io/courses/php-arrays/lessons/spread-operator/theory_unit</link>
+      <description>Цель: Научиться применять spread-оператор (оператор "расширения") для массивов.</description>
+      <pubDate>Tue, 21 Jul 2020 12:15:45 +0000</pubDate>
+    </item>
+  </channel>
+</rss>

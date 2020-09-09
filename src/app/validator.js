@@ -1,13 +1,7 @@
-import { string, object, setLocale } from 'yup';
-
-setLocale({
-  string: {
-    url: 'RSS link must be a valid URL',
-  },
-});
+import { string, object } from 'yup';
 
 const schema = object().shape({
-  url: string().url().required(),
+  link: string().url().required(),
 });
 
-export default (url) => schema.validate({ url }).then((valid) => valid.url);
+export default (link) => schema.validate({ link }).then((valid) => valid.link);

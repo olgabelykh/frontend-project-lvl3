@@ -6,3 +6,5 @@ develop:
 	npm start
 lint:
 	npx eslint .
+test:
+	npm run test
