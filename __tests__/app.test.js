@@ -83,10 +83,6 @@ describe('app', () => {
         expect(
           document.querySelector('.feed-form .feed-form__message').textContent
         ).toBe(text);
-        expect(
-          document.querySelector('.feeds').firstChild.querySelector('.posts')
-            .childNodes.length
-        ).toBe(5);
       });
   });
 });
