@@ -1,9 +1,7 @@
 import i18next from 'i18next';
-import en from './locales/en';
+import resources from './locales';
 
 export default i18next.init({
   lng: 'en',
-  resources: {
-    en,
-  },
+  resources,
 });

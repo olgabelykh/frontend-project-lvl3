@@ -8,10 +8,12 @@ export default {
       parse: `Can't parse channel.`,
       alreadyAdded: 'Channel is already added.',
       unknownLoadingStatus: 'Unknown Loading Status',
+      unknownFormStatus: 'Unknown Form Status',
     },
     loadingProcess: {
       status: {
         success: 'Channel successfully added.',
+        pending: 'Loading...',
       },
     },
     channelForm: {

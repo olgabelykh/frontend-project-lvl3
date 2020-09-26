@@ -5,35 +5,41 @@ import _ from 'lodash';
 import validate from './validator';
 import parse from './parser';
 import request from './request';
-import * as ui from './ui';
+import ui from './ui';
 import {
   REQUEST_TRY_COUNT,
+  REQUEST_RETRY_TIMEOUT,
   REFRESH_TIMEOUT,
   LOADING_STATUS_IDLE,
   LOADING_STATUS_SUCCESS,
-} from './contants';
+  FORM_STATUS_ENABLED,
+  FORM_STATUS_DISABLED,
+  FORM_STATUS_INVALID,
+  FORM_STATUS_IDLE,
+  LOADING_STATUS_FAIL,
+  FORM_STATUS_VALID,
+  LOADING_STATUS_PENDING,
+} from './constants';
 
 export default () => {
   const state = {
     feeds: [],
     posts: [],
-    error: null,
-    loadingProcess: {
-      isLoading: false,
+    loading: {
       status: LOADING_STATUS_IDLE,
+      error: null,
     },
     form: {
-      isValid: true,
+      status: FORM_STATUS_ENABLED,
+      error: null,
     },
   };
 
   const renderStateMapping = {
-    error: ui.renderError,
-    'form.isValid': ui.renderFormIsValid,
-    'loadingProcess.isLoading': ui.renderLoadingProcessIsLoading,
-    'loadingProcess.status': ui.renderLoadingProcessStatus,
-    feeds: ui.renderFeeds,
-    posts: ui.renderPosts,
+    form: ui.renderForm.bind(ui),
+    loading: ui.renderLoading.bind(ui),
+    feeds: ui.renderFeeds.bind(ui),
+    posts: ui.renderPosts.bind(ui),
   };
 
   const renderState = (path, value, prevValue) =>
@@ -42,7 +48,7 @@ export default () => {
   const watchedState = onChange(state, renderState);
 
   const refresh = ({ url, feedId }) => {
-    request(url, REQUEST_TRY_COUNT)
+    request(url, REQUEST_TRY_COUNT, REQUEST_RETRY_TIMEOUT)
       .then(({ data }) => {
         const { items } = parse(data);
         const newPosts = _.differenceBy(items, state.posts, 'guid');
@@ -55,45 +61,65 @@ export default () => {
       .catch(() => {});
   };
 
+  const isExistedFeed = (url) => _.findIndex(state.feeds, ['url', url]) !== -1;
+
+  const validateUrl = (url) =>
+    validate(url)
+      .then((validUrl) => {
+        if (isExistedFeed(url)) {
+          throw new Error(i18next.t('errors.alreadyAdded'));
+        }
+        watchedState.form = { status: FORM_STATUS_VALID };
+        return validUrl;
+      })
+      .catch(({ message }) => {
+        watchedState.form = {
+          status: FORM_STATUS_INVALID,
+          error: message,
+        };
+        return Promise.reject(new Error(message));
+      });
+
+  const getFeed = (link) =>
+    request(link, REQUEST_TRY_COUNT, REQUEST_RETRY_TIMEOUT)
+      .then(({ url, data }) => {
+        watchedState.loading = { status: LOADING_STATUS_SUCCESS };
+        return { url, feed: parse(data) };
+      })
+      .catch(({ message }) => {
+        watchedState.loading = {
+          status: LOADING_STATUS_FAIL,
+          error: message,
+        };
+        return Promise.reject(new Error(message));
+      });
+
   const init = () => {
     ui.renderText();
 
     ui.form.addEventListener('submit', (event) => {
       event.preventDefault();
 
-      watchedState.error = null;
-      watchedState.loadingProcess.status = LOADING_STATUS_IDLE;
-      watchedState.form.isValid = true;
+      watchedState.form = { status: FORM_STATUS_DISABLED };
 
-      validate(new FormData(event.target).get('url'))
-        .catch(({ message }) => {
-          watchedState.form.isValid = false;
-          throw new Error(message);
-        })
+      validateUrl(new FormData(event.target).get('url'))
         .then((url) => {
-          if (_.findIndex(state.feeds, ['url', url]) !== -1) {
-            throw new Error(i18next.t('errors.alreadyAdded'));
-          }
-          watchedState.loadingProcess.isLoading = true;
-          return url;
+          watchedState.loading = { status: LOADING_STATUS_PENDING };
+          return getFeed(url);
         })
-        .then((url) => request(url, REQUEST_TRY_COUNT))
-        .then(({ url, data }) => {
-          const { title, items } = parse(data);
+        .then(({ url, feed: { title, items } }) => {
           const feedId = uniqid();
           watchedState.feeds = [...state.feeds, { id: feedId, url, title }];
           watchedState.posts = [
             ...state.posts,
             ...items.map((item) => ({ feedId, id: uniqid(), ...item })),
           ];
-          watchedState.loadingProcess.status = LOADING_STATUS_SUCCESS;
+          watchedState.form = { status: FORM_STATUS_IDLE };
           setTimeout(refresh, REFRESH_TIMEOUT, { url, feedId });
         })
-        .catch(({ message }) => {
-          watchedState.error = message;
-        })
+        .catch(() => {})
         .finally(() => {
-          watchedState.loadingProcess.isLoading = false;
+          watchedState.form = { status: FORM_STATUS_ENABLED };
         });
     });
   };

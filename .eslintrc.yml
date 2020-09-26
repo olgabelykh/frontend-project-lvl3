@@ -1,6 +1,7 @@
 env:
   browser: true,
-  node: true
+  node: true,
+  jest: true
 extends:
   - 'airbnb-base'
   - 'plugin:jest/recommended'
@@ -8,9 +9,9 @@ extends:
 plugins:
   - import
   - jest
-parserOptions:
-  ecmaVersion: 2020
+parser: 'babel-eslint'
 rules:
   import/extensions: 0
   linebreak-style: ['error', 'unix']
   import/no-extraneous-dependencies: [error, { devDependencies: true }]
+  no-underscore-dangle: 0
