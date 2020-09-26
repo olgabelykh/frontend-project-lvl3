@@ -6,6 +6,6 @@
 
 ## Description
 
-A training project - RSS reader
+A training project - RSS reader.
 
 [Visit deployed project](https://frontend-project-lvl3-kappa-ashy.vercel.app)
