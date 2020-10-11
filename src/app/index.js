@@ -1,25 +1,27 @@
 import i18next from 'i18next';
-import onChange from 'on-change';
-import uniqid from 'uniqid';
+import { string } from 'yup';
+import axios from 'axios';
 import _ from 'lodash';
-import validate from './validator';
+import resources from '../locales';
 import parse from './parser';
-import request from './request';
 import ui from './ui';
+import watch from './watcher';
+
 import {
-  REQUEST_TRY_COUNT,
-  REQUEST_RETRY_TIMEOUT,
+  PROXY_URL,
   REFRESH_TIMEOUT,
   LOADING_STATUS_IDLE,
+  LOADING_STATUS_PENDING,
   LOADING_STATUS_SUCCESS,
+  LOADING_STATUS_FAIL,
   FORM_STATUS_ENABLED,
   FORM_STATUS_DISABLED,
   FORM_STATUS_INVALID,
-  FORM_STATUS_IDLE,
-  LOADING_STATUS_FAIL,
   FORM_STATUS_VALID,
-  LOADING_STATUS_PENDING,
+  FORM_STATUS_IDLE,
 } from './constants';
+
+const getProxiedUrl = (url) => `${PROXY_URL}/${url}`;
 
 export default () => {
   const state = {
@@ -28,6 +30,7 @@ export default () => {
     loading: {
       status: LOADING_STATUS_IDLE,
       error: null,
+      message: null,
     },
     form: {
       status: FORM_STATUS_ENABLED,
@@ -35,94 +38,114 @@ export default () => {
     },
   };
 
-  const renderStateMapping = {
-    form: ui.renderForm.bind(ui),
-    loading: ui.renderLoading.bind(ui),
-    feeds: ui.renderFeeds.bind(ui),
-    posts: ui.renderPosts.bind(ui),
-  };
+  const promise = i18next
+    .init({
+      lng: 'en',
+      resources,
+    })
+    .then(() => {
+      const watchedState = watch(ui, state);
 
-  const renderState = (path, value, prevValue) =>
-    renderStateMapping[path](value, prevValue);
+      const initUI = () => {
+        ui.header.textContent = i18next.t('header');
+        ui.lead.textContent = i18next.t('lead');
+        ui.details.textContent = i18next.t('details');
+        ui.input.setAttribute(
+          'placeholder',
+          i18next.t('channelForm.url.placeholder')
+        );
+        ui.submit.textContent = i18next.t('channelForm.submit.value');
+        ui.example.textContent = i18next.t('channelForm.example');
+      };
 
-  const watchedState = onChange(state, renderState);
+      const handleSubmit = (event) => {
+        event.preventDefault();
 
-  const refresh = ({ url, feedId }) => {
-    request(url, REQUEST_TRY_COUNT, REQUEST_RETRY_TIMEOUT)
-      .then(({ data }) => {
-        const { items } = parse(data);
-        const newPosts = _.differenceBy(items, state.posts, 'guid');
-        watchedState.posts = [
-          ...state.posts,
-          ...newPosts.map((item) => ({ feedId, id: uniqid(), ...item })),
-        ];
-        setTimeout(refresh, REFRESH_TIMEOUT, { url, feedId });
-      })
-      .catch(() => {});
-  };
+        watchedState.form = { status: FORM_STATUS_DISABLED };
 
-  const isExistedFeed = (url) => _.findIndex(state.feeds, ['url', url]) !== -1;
+        const url = new FormData(event.target).get('url');
 
-  const validateUrl = (url) =>
-    validate(url)
-      .then((validUrl) => {
-        if (isExistedFeed(url)) {
-          throw new Error(i18next.t('errors.alreadyAdded'));
+        try {
+          string()
+            .required(i18next.t('errors.emptyUrl'))
+            .url(i18next.t('errors.invalidUrl'))
+            .notOneOf(
+              state.feeds.map((item) => item.url),
+              i18next.t('errors.alreadyAdded')
+            )
+            .validateSync(url);
+          watchedState.form = { status: FORM_STATUS_VALID };
+        } catch ({ message }) {
+          watchedState.form = {
+            status: FORM_STATUS_INVALID,
+            error: message,
+          };
+          return;
         }
-        watchedState.form = { status: FORM_STATUS_VALID };
-        return validUrl;
-      })
-      .catch(({ message }) => {
-        watchedState.form = {
-          status: FORM_STATUS_INVALID,
-          error: message,
-        };
-        return Promise.reject(new Error(message));
-      });
 
-  const getFeed = (link) =>
-    request(link, REQUEST_TRY_COUNT, REQUEST_RETRY_TIMEOUT)
-      .then(({ url, data }) => {
-        watchedState.loading = { status: LOADING_STATUS_SUCCESS };
-        return { url, feed: parse(data) };
-      })
-      .catch(({ message }) => {
         watchedState.loading = {
-          status: LOADING_STATUS_FAIL,
-          error: message,
+          status: LOADING_STATUS_PENDING,
+          message: i18next.t('loadingProcess.status.pending'),
         };
-        return Promise.reject(new Error(message));
-      });
 
-  const init = () => {
-    ui.renderText();
+        axios
+          .get(getProxiedUrl(url))
+          .then((response) => {
+            const { title, items } = parse(response.data);
+            watchedState.feeds = [...state.feeds, { url, title }];
+            watchedState.posts = [
+              ...state.posts,
+              ...items.map((item) => ({ feedUrl: url, ...item })),
+            ];
 
-    ui.form.addEventListener('submit', (event) => {
-      event.preventDefault();
+            watchedState.loading = {
+              status: LOADING_STATUS_SUCCESS,
+              message: i18next.t('loadingProcess.status.success'),
+            };
+            watchedState.form = { status: FORM_STATUS_IDLE };
+          })
+          .catch(() => {
+            watchedState.loading = {
+              status: LOADING_STATUS_FAIL,
+              error: i18next.t('errors.cantGetChannel'),
+            };
+            watchedState.form = { status: FORM_STATUS_ENABLED };
+          });
+      };
 
-      watchedState.form = { status: FORM_STATUS_DISABLED };
+      const refresh = () => {
+        Promise.allSettled(
+          state.feeds.map(({ url }) => axios.get(getProxiedUrl(url)))
+        )
+          .then((responses) => {
+            responses.forEach((response) => {
+              const { status, value } = response;
+              if (status === 'rejected') {
+                return;
+              }
 
-      validateUrl(new FormData(event.target).get('url'))
-        .then((url) => {
-          watchedState.loading = { status: LOADING_STATUS_PENDING };
-          return getFeed(url);
-        })
-        .then(({ url, feed: { title, items } }) => {
-          const feedId = uniqid();
-          watchedState.feeds = [...state.feeds, { id: feedId, url, title }];
-          watchedState.posts = [
-            ...state.posts,
-            ...items.map((item) => ({ feedId, id: uniqid(), ...item })),
-          ];
-          watchedState.form = { status: FORM_STATUS_IDLE };
-          setTimeout(refresh, REFRESH_TIMEOUT, { url, feedId });
-        })
-        .catch(() => {})
-        .finally(() => {
-          watchedState.form = { status: FORM_STATUS_ENABLED };
-        });
+              const { data, headers } = value;
+              const { items } = parse(data);
+              const newPosts = _.differenceBy(items, state.posts, 'guid');
+              watchedState.posts = [
+                ...state.posts,
+                ...newPosts.map((item) => ({
+                  feedUrl: headers['x-final-url'],
+                  ...item,
+                })),
+              ];
+            });
+            setTimeout(refresh, REFRESH_TIMEOUT);
+          })
+          .catch(({ message }) => {
+            throw new Error(`Refresh feeds error: ${message}`);
+          });
+      };
+
+      initUI();
+      ui.form.addEventListener('submit', handleSubmit);
+      refresh();
     });
-  };
 
-  init();
+  return promise;
 };

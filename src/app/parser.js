@@ -1,5 +1,3 @@
-import i18next from 'i18next';
-
 const parser = new DOMParser();
 
 export default (string) => {
@@ -7,7 +5,7 @@ export default (string) => {
 
   const error = doc.querySelector('parsererror');
   if (error) {
-    throw new Error(i18next.t('errors.parse'));
+    throw new Error(error);
   }
 
   return {
