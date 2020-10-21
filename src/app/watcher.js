@@ -1,37 +1,32 @@
+import i18next from 'i18next';
 import onChange from 'on-change';
 import _ from 'lodash';
 import { createFeedElement, createPostElement } from './ui';
 
 import {
-  LOADING_STATUS_SUCCESS,
-  FORM_STATUS_IDLE,
-  FORM_STATUS_DISABLED,
-  FORM_STATUS_VALID,
-  FORM_STATUS_INVALID,
-  FORM_STATUS_ENABLED,
-  LOADING_STATUS_PENDING,
-  LOADING_STATUS_FAIL,
+  FORM_STATUS,
+  LOADING_STATUS,
 } from './constants';
 
 const renderForm = (elements, { status, error }) => {
   switch (status) {
-    case FORM_STATUS_IDLE:
+    case FORM_STATUS.idle:
       elements.form.reset();
       elements.submit.removeAttribute('disabled');
       break;
-    case FORM_STATUS_VALID:
+    case FORM_STATUS.valid:
       elements.input.classList.remove('border-danger');
       elements.renderErrorMessage('');
       break;
-    case FORM_STATUS_INVALID:
+    case FORM_STATUS.invalid:
       elements.input.classList.add('border-danger');
-      elements.renderErrorMessage(error);
+      elements.renderErrorMessage(i18next.t(error));
       elements.submit.removeAttribute('disabled');
       break;
-    case FORM_STATUS_ENABLED:
+    case FORM_STATUS.enabled:
       elements.submit.removeAttribute('disabled');
       break;
-    case FORM_STATUS_DISABLED:
+    case FORM_STATUS.disabled:
       elements.submit.setAttribute('disabled', '');
       break;
     default:
@@ -39,16 +34,16 @@ const renderForm = (elements, { status, error }) => {
   }
 };
 
-const renderLoading = (elements, { status, error, message }) => {
+const renderLoading = (elements, { status, error }) => {
   switch (status) {
-    case LOADING_STATUS_FAIL:
-      elements.renderErrorMessage(error);
+    case LOADING_STATUS.fail:
+      elements.renderErrorMessage(i18next.t(error));
       break;
-    case LOADING_STATUS_PENDING:
-      elements.renderMessage(message);
+    case LOADING_STATUS.pending:
+      elements.renderMessage(i18next.t('loadingProcess.status.pending'));
       break;
-    case LOADING_STATUS_SUCCESS:
-      elements.renderSuccessMessage(message);
+    case LOADING_STATUS.success:
+      elements.renderSuccessMessage(i18next.t('loadingProcess.status.success'));
       break;
     default:
       throw new Error('Unknown loading status');

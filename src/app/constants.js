@@ -1,13 +1,17 @@
 export const PROXY_URL = `https://cors-anywhere.herokuapp.com`;
-export const REFRESH_TIMEOUT = 50000;
+export const TRACK_NEW_POSTS_TIMEOUT = 50000;
 
-export const LOADING_STATUS_IDLE = 'idle';
-export const LOADING_STATUS_SUCCESS = 'success';
-export const LOADING_STATUS_PENDING = 'pending';
-export const LOADING_STATUS_FAIL = 'fail';
+export const LOADING_STATUS = {
+    idle: 'idle',
+    success: 'success',
+    pending: 'pending',
+    fail: 'fail'
+};
 
-export const FORM_STATUS_IDLE = 'idle';
-export const FORM_STATUS_DISABLED = 'disabled';
-export const FORM_STATUS_ENABLED = 'enabled';
-export const FORM_STATUS_VALID = 'valid';
-export const FORM_STATUS_INVALID = 'invalid';
+export const FORM_STATUS = {
+    idle: 'idle',
+    disabled: 'disabled',
+    enabled: 'enabled',
+    valid: 'valid',
+    invalid: 'invalid'
+}

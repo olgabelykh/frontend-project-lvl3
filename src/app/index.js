@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { string } from 'yup';
+import { string, setLocale } from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
 import resources from '../locales';
@@ -9,16 +9,9 @@ import watch from './watcher';
 
 import {
   PROXY_URL,
-  REFRESH_TIMEOUT,
-  LOADING_STATUS_IDLE,
-  LOADING_STATUS_PENDING,
-  LOADING_STATUS_SUCCESS,
-  LOADING_STATUS_FAIL,
-  FORM_STATUS_ENABLED,
-  FORM_STATUS_DISABLED,
-  FORM_STATUS_INVALID,
-  FORM_STATUS_VALID,
-  FORM_STATUS_IDLE,
+  TRACK_NEW_POSTS_TIMEOUT,
+  LOADING_STATUS,
+  FORM_STATUS,
 } from './constants';
 
 const getProxiedUrl = (url) => `${PROXY_URL}/${url}`;
@@ -28,15 +21,24 @@ export default () => {
     feeds: [],
     posts: [],
     loading: {
-      status: LOADING_STATUS_IDLE,
+      status: LOADING_STATUS.idle,
       error: null,
-      message: null,
     },
     form: {
-      status: FORM_STATUS_ENABLED,
+      status: FORM_STATUS.enabled,
       error: null,
     },
   };
+
+  setLocale({
+    mixed: {
+        notOneOf: 'errors.alreadyAdded',
+        required: 'errors.emptyUrl',
+    },
+    string: {
+        url: 'errors.invalidUrl'
+    },
+  });
 
   const promise = i18next
     .init({
@@ -46,7 +48,7 @@ export default () => {
     .then(() => {
       const watchedState = watch(ui, state);
 
-      const initUI = () => {
+      const renderLocale = () => {
         ui.header.textContent = i18next.t('header');
         ui.lead.textContent = i18next.t('lead');
         ui.details.textContent = i18next.t('details');
@@ -58,35 +60,32 @@ export default () => {
         ui.example.textContent = i18next.t('channelForm.example');
       };
 
+      const validateUrl = (url) => 
+      string()
+        .required()
+        .url()
+        .notOneOf(state.feeds.map((item) => item.url))
+        .validateSync(url);
+
       const handleSubmit = (event) => {
         event.preventDefault();
 
-        watchedState.form = { status: FORM_STATUS_DISABLED };
+        watchedState.form = { status: FORM_STATUS.disabled };
 
         const url = new FormData(event.target).get('url');
 
         try {
-          string()
-            .required(i18next.t('errors.emptyUrl'))
-            .url(i18next.t('errors.invalidUrl'))
-            .notOneOf(
-              state.feeds.map((item) => item.url),
-              i18next.t('errors.alreadyAdded')
-            )
-            .validateSync(url);
-          watchedState.form = { status: FORM_STATUS_VALID };
+          validateUrl(url);
+          watchedState.form = { status: FORM_STATUS.valid };
         } catch ({ message }) {
           watchedState.form = {
-            status: FORM_STATUS_INVALID,
+            status: FORM_STATUS.invalid,
             error: message,
           };
           return;
         }
 
-        watchedState.loading = {
-          status: LOADING_STATUS_PENDING,
-          message: i18next.t('loadingProcess.status.pending'),
-        };
+        watchedState.loading = { status: LOADING_STATUS.pending };
 
         axios
           .get(getProxiedUrl(url))
@@ -98,22 +97,19 @@ export default () => {
               ...items.map((item) => ({ feedUrl: url, ...item })),
             ];
 
-            watchedState.loading = {
-              status: LOADING_STATUS_SUCCESS,
-              message: i18next.t('loadingProcess.status.success'),
-            };
-            watchedState.form = { status: FORM_STATUS_IDLE };
+            watchedState.loading = { status: LOADING_STATUS.success };
+            watchedState.form = { status: FORM_STATUS.idle };
           })
           .catch(() => {
             watchedState.loading = {
-              status: LOADING_STATUS_FAIL,
-              error: i18next.t('errors.cantGetChannel'),
+              status: LOADING_STATUS.fail,
+              error: 'errors.cantGetChannel',
             };
-            watchedState.form = { status: FORM_STATUS_ENABLED };
+            watchedState.form = { status: FORM_STATUS.enabled };
           });
       };
 
-      const refresh = () => {
+      const trackNewPosts = () => {
         Promise.allSettled(
           state.feeds.map(({ url }) => axios.get(getProxiedUrl(url)))
         )
@@ -135,16 +131,16 @@ export default () => {
                 })),
               ];
             });
-            setTimeout(refresh, REFRESH_TIMEOUT);
+            setTimeout(trackNewPosts, TRACK_NEW_POSTS_TIMEOUT);
           })
           .catch(({ message }) => {
             throw new Error(`Refresh feeds error: ${message}`);
           });
       };
 
-      initUI();
+      renderLocale();
       ui.form.addEventListener('submit', handleSubmit);
-      refresh();
+      trackNewPosts();
     });
 
   return promise;

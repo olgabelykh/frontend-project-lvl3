@@ -8,8 +8,6 @@ export default {
       invalidUrl: 'Rss link must be a valid url.',
       emptyUrl: 'Rss link is required',
       alreadyAdded: 'Channel is already added.',
-      unknownLoadingStatus: 'Unknown Loading Status',
-      unknownFormStatus: 'Unknown Form Status',
     },
     loadingProcess: {
       status: {
