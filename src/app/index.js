@@ -60,12 +60,18 @@ export default () => {
         ui.example.textContent = i18next.t('channelForm.example');
       };
 
-      const validateUrl = (url) => 
-      string()
-        .required()
-        .url()
-        .notOneOf(state.feeds.map((item) => item.url))
-        .validateSync(url);
+      const validateUrl = (url) => {
+        try {
+          string()
+          .required()
+          .url()
+          .notOneOf(state.feeds.map((item) => item.url))
+          .validateSync(url);
+          return null;
+        } catch ({ message }) {
+          return message;
+        }
+      }
 
       const handleSubmit = (event) => {
         event.preventDefault();
@@ -74,17 +80,16 @@ export default () => {
 
         const url = new FormData(event.target).get('url');
 
-        try {
-          validateUrl(url);
-          watchedState.form = { status: FORM_STATUS.valid };
-        } catch ({ message }) {
+        const validateError = validateUrl(url);
+        if (validateError) {
           watchedState.form = {
             status: FORM_STATUS.invalid,
-            error: message,
+            error: validateError,
           };
           return;
         }
 
+        watchedState.form = { status: FORM_STATUS.valid };
         watchedState.loading = { status: LOADING_STATUS.pending };
 
         axios
